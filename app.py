@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request
-
-from clima import get_weather
+from flask import Flask, render_template, request, redirect, url_for
+import clima
 
 app = Flask(__name__)
 
@@ -10,14 +9,16 @@ def index():
 
 @app.route('/weather', methods=['POST'])
 def weather():
-    city = request.form['city']
-    weather_data = get_weather(city)
-    if weather_data:
-        return render_template('weather.html', weather=weather_data, city=city)
-    else:
-        return render_template('index.html', error="No se encontró información para la ciudad ingresada")
-   
-
+    city = request.form.get('city')
+    if not city:
+        return render_template('index.html', error="Por favor, ingresa el nombre de una ciudad.")
+    
+    weather_data = clima.get_weather(city)
+    
+    if weather_data is None:
+        return render_template('index.html', error="No se encontraron datos para esa ciudad.")
+    
+    return render_template('weather.html', weather=weather_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
